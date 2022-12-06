@@ -1,10 +1,10 @@
-rm(list=ls())
 ##################################################################
 # Bayesian Optimization in 2D based on Expected Improvement
 ##################################################################
 
 library(DEoptim)
 library(mvtnorm)
+library(fields)
 
 #Objective function that we wish to maximize
 #McCormick function
@@ -80,7 +80,7 @@ x <- as.matrix(expand.grid(x1 = seq(-1.5, 4, length.out = 3),
 y <- apply(x, 1, \(q) obj(q[1], q[2]))
 
 iterMax <- 50
-savePlot <- TRUE
+savePlot <- FALSE
 
 if(savePlot) {
   png(paste0("img-", sprintf("%02d", 0), ".png"), 800, 600)
