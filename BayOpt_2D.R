@@ -24,25 +24,34 @@ xTrue <- DEoptim(\(x) -obj(x[1], x[2]), c(-1.5, -3), c(4, 4),
                  control = DEoptim.control(trace = FALSE))$optim$bestmem
 yTrue <- obj(xTrue[1], xTrue[2])
 
-covMat32_2D <- function(s, t, alpha, rho) {
-  dist1 <- sqrt((s[1] - t[1])^2)
-  dist2 <- sqrt((s[2] - t[2])^2)
-  
-  K1 <- (1 + (sqrt(3) / rho[1]) * dist1) * exp((-sqrt(3) / rho[1]) * dist1)
-  K2 <- (1 + (sqrt(3) / rho[2]) * dist2) * exp((-sqrt(3) / rho[2]) * dist2)
-  
-  alpha^2 * K1 * K2
+# covMat32_2D <- function(s, t, alpha, rho) {
+#   dist1 <- sqrt((s[1] - t[1])^2)
+#   dist2 <- sqrt((s[2] - t[2])^2)
+#   
+#   K1 <- (1 + (sqrt(3) / rho[1]) * dist1) * exp((-sqrt(3) / rho[1]) * dist1)
+#   K2 <- (1 + (sqrt(3) / rho[2]) * dist2) * exp((-sqrt(3) / rho[2]) * dist2)
+#   
+#   alpha^2 * K1 * K2
+# }
+# 
+# getCovMat <- function(s, t, alpha, rho) {
+#   #Stupid implementation - very slow - fix!
+#   cMat <- matrix(NA, nrow(s), nrow(t))
+#   for(a in 1:nrow(s)) {
+#     for(b in 1:nrow(t)) {
+#       cMat[a, b] <- covMat32_2D(s[a,], t[b,], alpha, rho)
+#     }
+#   }
+#   cMat
+# }
+
+covMat32_2D <- \(s, t, rho){
+  dist <- sqrt((s - t) ^ 2)
+  (1 + (sqrt(3) / rho) * dist) * exp((-sqrt(3) / rho) * dist)
 }
 
-getCovMat <- function(s, t, alpha, rho) {
-  #Stupid implementation - very slow - fix!
-  cMat <- matrix(NA, nrow(s), nrow(t))
-  for(a in 1:nrow(s)) {
-    for(b in 1:nrow(t)) {
-      cMat[a, b] <- covMat32_2D(s[a,], t[b,], alpha, rho)
-    }
-  }
-  cMat
+getCovMat <- \(s, t, alpha, rho){# also holds for higher dimensions
+  alpha ^ 2 * do.call("*", lapply(seq_len(ncol(s)), \(x) outer(s[,x], t[,x], covMat32_2D, rho[x])))
 }
 
 getOptPar <- \(x, y) {
